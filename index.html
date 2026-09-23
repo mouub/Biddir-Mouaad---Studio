@@ -274,7 +274,8 @@ img { max-width: 100%; }
 .service h3 { font: 700 30px/1.05 var(--f-display); letter-spacing: -.03em; margin: 18px 0 14px; }
 .service p { margin: 0 0 20px; color: var(--ink-2); font-size: 16px; max-width: 42ch; }
 .service ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font: 400 13.5px/1.4 var(--f-mono); color: var(--ink-2); }
-.service li::before { content: "→ "; color: var(--accent); }
+.service li { display: grid; grid-template-columns: auto 1fr; column-gap: 1ch; }
+.service li::before { content: "→"; color: var(--accent); }
 @media (max-width: 900px) {
   .services { grid-template-columns: 1fr; }
   .service, .service + .service { padding: 28px 0; border-right: 0; border-bottom: 1px solid var(--line); }
@@ -345,8 +346,8 @@ footer a:hover { color: var(--accent); }
      ===================================================================== -->
 <script>
   const CONTACT = {
-    email:    "",              // es. "nome@dominio.it"
-    whatsapp: "",              // solo cifre con prefisso, es. "393331234567"
+    email:    "moubiddir@gmail.com",
+    whatsapp: "393895156078",   // solo cifre con prefisso internazionale
     location: "Italia"
   };
 </script>
@@ -407,7 +408,7 @@ footer a:hover { color: var(--accent); }
        ===================================================================== -->
   <section class="sec" id="lavori">
     <div class="wrap">
-      <p class="cmd">~/studio <b>$</b> ls ./lavori</p>
+      <p class="cmd">~/studio <b>$</b> ./lavori</p>
       <div class="sec-head">
         <h2>Lavori selezionati</h2>
         <span class="count" id="worksCount">00 progetti</span>
@@ -422,7 +423,7 @@ footer a:hover { color: var(--accent); }
        ===================================================================== -->
   <section class="sec" id="servizi">
     <div class="wrap">
-      <p class="cmd">~/studio <b>$</b> cat servizi.txt</p>
+      <p class="cmd">~/studio <b>$</b> servizi</p>
       <div class="sec-head"><h2>Cosa faccio</h2><span class="count">3 servizi</span></div>
       <div class="services">
         <article class="service">
@@ -478,8 +479,7 @@ footer a:hover { color: var(--accent); }
         </div>
         <dl class="facts">
           <div><dt>Ruolo</dt><dd>Sviluppatore &amp; web designer</dd></div>
-          <div><dt>Specialità</dt><dd>Gestionali di magazzino</dd></div>
-          <div><dt>Fa anche</dt><dd>Siti web e software operativi</dd></div>
+          <div><dt>Specialità</dt><dd>Gestionali di magazzino, siti web e software operativi</dd></div>
           <div><dt>Base</dt><dd id="factLocation">Italia</dd></div>
         </dl>
       </div>
@@ -609,7 +609,7 @@ const PROJECTS = [];
     mail.href = `mailto:${CONTACT.email}`; mail.hidden = false;
     bits.push(`<a href="mailto:${CONTACT.email}">${CONTACT.email}</a>`);
   }
-  if (CONTACT.whatsapp) bits.push('WhatsApp +' + CONTACT.whatsapp.replace(/^(\d{2})(\d{3})(\d+)/, '$1 $2 $3'));
+  if (CONTACT.whatsapp) bits.push('WhatsApp +' + CONTACT.whatsapp.replace(/^(\d{2})(\d{3})(\d{3})(\d+)/, '$1 $2 $3 $4'));
   line.innerHTML = bits.join(' · ');
   document.getElementById('specLocation').textContent = CONTACT.location;
   document.getElementById('factLocation').textContent = CONTACT.location;
