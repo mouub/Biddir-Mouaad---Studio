@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Biddir Mouaad — Studio</title>
+<meta name="description" content="Biddir Mouaad, sviluppatore software e web designer: gestionali di magazzino, software operativi e siti web su misura.">
+<meta name="theme-color" content="#ECEEEA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C0B09" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314171A'/%3E%3Ctext x='6' y='22' font-family='monospace' font-size='15' font-weight='700' fill='%23FFB23F'%3EBM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,500;0,700;1,500&family=Geist:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<!-- Applica il tema salvato prima del primo paint (evita il lampo di tema sbagliato) -->
+<script>
+  try { var t = localStorage.getItem('bm-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+
+<style>
+/* =====================================================================
+   DESIGN TOKENS
+   Due mondi, un solo layout:
+   - Chiaro  = "Tavola tecnica"  (carta da disegno, griglia, verde bosco)
+   - Scuro   = "Terminale"       (fosforo ambra, puntinato, scanline)
+   Per cambiare i colori modifica solo questi blocchi.
+   ===================================================================== */
+:root {
+  --bg:         #ECEEEA;
+  --surface:    #F6F7F4;
+  --ink:        #14171A;
+  --ink-2:      #3A3F41;
+  --muted:      #697170;
+  --line:       rgba(20, 23, 26, .13);
+  --line-strong:#14171A;
+  --accent:     #1F5C45;
+  --accent-wash:rgba(31, 92, 69, .09);
+  --on-accent:  #F6F7F4;
+  --glow:       transparent;
+  --tex: linear-gradient(var(--line) 1px, transparent 1px) 0 -1px / 100% 240px,
+         linear-gradient(90deg, var(--line) 1px, transparent 1px) -1px 0 / calc(100% / 12) 100%;
+  --scan-opacity: 0;
+
+  --f-display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body:    "Geist", "Helvetica Neue", Arial, sans-serif;
+  --f-mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --gutter: clamp(16px, 4vw, 56px);
+  --maxw: 1320px;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  color-scheme: light;
+}
+
+/* Palette scura: definita due volte (preferenza di sistema + scelta esplicita) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#0C0B09; --surface:#15130F; --ink:#EDE6D6; --ink-2:#C8C0AE; --muted:#8C8575;
+    --line:rgba(237,230,214,.12); --line-strong:#EDE6D6;
+    --accent:#FFB23F; --accent-wash:rgba(255,178,63,.10); --on-accent:#0C0B09;
+    --glow: radial-gradient(circle at 82% 8%, rgba(255,178,63,.14), transparent 42%);
+    --tex: radial-gradient(rgba(237,230,214,.075) 1px, transparent 1px) 0 0 / 22px 22px;
+    --scan-opacity: 1;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#0C0B09; --surface:#15130F; --ink:#EDE6D6; --ink-2:#C8C0AE; --muted:#8C8575;
+  --line:rgba(237,230,214,.12); --line-strong:#EDE6D6;
+  --accent:#FFB23F; --accent-wash:rgba(255,178,63,.10); --on-accent:#0C0B09;
+  --glow: radial-gradient(circle at 82% 8%, rgba(255,178,63,.14), transparent 42%);
+  --tex: radial-gradient(rgba(237,230,214,.075) 1px, transparent 1px) 0 0 / 22px 22px;
+  --scan-opacity: 1;
+  color-scheme: dark;
+}
+
+/* =====================================================================
+   BASE
+   ===================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 17px/1.6 var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background-color .4s var(--ease), color .4s var(--ease);
+}
+/* Texture di sfondo (griglia tecnica / puntinato terminale) */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background: var(--glow), var(--tex);
+}
+/* Scanline: visibili solo nel tema scuro */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 50; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
+  opacity: var(--scan-opacity);
+  transition: opacity .4s;
+}
+a { color: inherit; }
+img { max-width: 100%; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.wrap { max-width: var(--maxw); margin: 0 auto; padding-inline: var(--gutter); }
+.mono { font-family: var(--f-mono); }
+
+/* Etichetta di sezione in stile riga di comando */
+.cmd {
+  font: 500 13px/1 var(--f-mono);
+  color: var(--muted);
+  letter-spacing: .02em;
+  margin: 0 0 22px;
+}
+.cmd b { color: var(--accent); font-weight: 500; }
+
+/* =====================================================================
+   HEADER
+   ===================================================================== */
+.bar {
+  position: sticky; top: 0; z-index: 40;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 64px; }
+.logo { font: 500 13px/1 var(--f-mono); letter-spacing: .06em; text-decoration: none; text-transform: uppercase; white-space: nowrap; }
+.logo b { color: var(--accent); font-weight: 500; }
+.links { display: flex; gap: 28px; font-size: 14.5px; }
+.links a { color: var(--ink-2); text-decoration: none; transition: color .2s; }
+.links a:hover { color: var(--accent); }
+.tools { display: flex; align-items: center; gap: 10px; }
+
+/* Interruttore tema */
+.theme-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 36px; padding: 0 12px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface); color: var(--ink);
+  font: 500 12px/1 var(--f-mono); cursor: pointer;
+  transition: border-color .2s;
+}
+.theme-btn:hover { border-color: var(--accent); }
+.theme-btn .ico { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid currentColor; background: linear-gradient(90deg, currentColor 50%, transparent 50%); }
+
+@media (max-width: 820px) { .links { display: none; } }
+
+/* =====================================================================
+   HERO
+   ===================================================================== */
+.hero { padding-block: clamp(56px, 11vh, 132px) clamp(48px, 8vh, 96px); }
+.status {
+  display: inline-flex; align-items: center; gap: 12px;
+  font: 500 12px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--accent);
+}
+.status::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 5px var(--accent-wash);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+.hero h1 {
+  font-family: var(--f-display); font-weight: 700;
+  font-size: clamp(50px, 9.2vw, 148px);
+  line-height: .9; letter-spacing: -.045em;
+  margin: 30px 0 40px; text-wrap: balance;
+}
+.hero h1 em { font-style: normal; font-weight: 500; color: var(--accent); }
+.cursor {
+  display: inline-block; width: .42em; height: .74em; margin-left: .08em;
+  background: var(--accent); vertical-align: baseline;
+  animation: blink 1.05s steps(2, start) infinite;
+}
+.hero-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 32px 48px; align-items: end;
+  border-top: 1px solid var(--line-strong); padding-top: 28px;
+}
+.lede { margin: 0; max-width: 54ch; font-size: clamp(17px, 1.5vw, 19px); color: var(--ink-2); }
+.ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 15px 24px; border-radius: 999px;
+  font: 500 15px/1 var(--f-body); text-decoration: none;
+  border: 1px solid var(--line-strong);
+  transition: transform .25s var(--ease), background-color .25s, color .25s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-solid { background: var(--ink); color: var(--bg); }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn-ghost:hover { background: var(--ink); color: var(--bg); }
+.btn svg { width: 18px; height: 18px; flex: none; }
+
+/* Striscia di specifiche sotto l'hero */
+.specs {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  margin-top: clamp(48px, 7vh, 80px);
+  border: 1px solid var(--line); background: var(--surface);
+}
+.specs div { padding: 18px 20px; border-right: 1px solid var(--line); }
+.specs div:last-child { border-right: 0; }
+.specs dt { font: 500 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.specs dd { margin: 0; font-weight: 500; font-size: 15.5px; }
+@media (max-width: 820px) {
+  .hero-row { grid-template-columns: 1fr; }
+  .specs { grid-template-columns: 1fr 1fr; }
+  .specs div:nth-child(2) { border-right: 0; }
+  .specs div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+}
+
+/* Animazione d'ingresso dell'hero (parte già visibile se reduced-motion) */
+.rv { animation: rise .9s var(--ease) both; }
+.d1 { animation-delay: .08s; } .d2 { animation-delay: .2s; } .d3 { animation-delay: .32s; } .d4 { animation-delay: .44s; }
+
+/* =====================================================================
+   SEZIONI
+   ===================================================================== */
+.sec { padding-block: clamp(72px, 11vh, 128px); border-top: 1px solid var(--line); }
+.sec-head { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 16px 32px; margin-bottom: clamp(36px, 5vh, 56px); }
+.sec h2 {
+  font-family: var(--f-display); font-weight: 700;
+  font-size: clamp(38px, 5.4vw, 76px); line-height: .95; letter-spacing: -.035em;
+  margin: 0; text-wrap: balance;
+}
+.count { font: 500 13px/1 var(--f-mono); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* ---------- LAVORI ---------- */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+.filters button {
+  font: 500 12.5px/1 var(--f-mono); padding: 10px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink-2); cursor: pointer;
+}
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.works { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 20px; }
+
+/* Stato vuoto: tre "slot" pronti sul tavolo da disegno */
+.slot {
+  position: relative; min-height: 300px; padding: 22px;
+  border: 1.5px dashed var(--line); border-radius: 4px;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 20px;
+  background: repeating-linear-gradient(-45deg, transparent 0 11px, var(--accent-wash) 11px 12px);
+}
+.slot .tag { font: 500 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+.slot p { margin: 0; font-family: var(--f-display); font-weight: 500; font-size: 24px; line-height: 1.15; letter-spacing: -.02em; max-width: 18ch; }
+.slot .sub { font: 400 13px/1.5 var(--f-mono); color: var(--muted); }
+.slot.is-first { border-color: var(--accent); }
+.slot.is-first .tag span:last-child { color: var(--accent); }
+.slot:not(.is-first) p { color: var(--muted); }
+@media (max-width: 700px) { .slot { min-height: 200px; } }
+
+/* Card progetto (usata quando l'array PROJECTS avrà contenuti) */
+.work {
+  display: flex; flex-direction: column; border: 1px solid var(--line); background: var(--surface);
+  text-decoration: none; border-radius: 4px; overflow: hidden;
+  transition: transform .3s var(--ease), border-color .3s;
+}
+.work:hover { transform: translateY(-4px); border-color: var(--accent); }
+.work .shot { aspect-ratio: 16 / 10; max-width: 100%; background: var(--accent-wash); border-bottom: 1px solid var(--line); overflow: hidden; }
+.work .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.work .body { padding: 20px 22px 24px; display: grid; gap: 10px; }
+.work .meta { font: 500 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+.work h3 { margin: 0; font: 700 26px/1.05 var(--f-display); letter-spacing: -.025em; }
+.work p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+.work .stack { display: flex; flex-wrap: wrap; gap: 6px; }
+.work .stack span { font: 400 11.5px/1 var(--f-mono); padding: 6px 8px; border: 1px solid var(--line); border-radius: 3px; color: var(--ink-2); }
+
+/* ---------- SERVIZI ---------- */
+.services { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line-strong); }
+.service { padding: 30px 28px 34px 0; border-right: 1px solid var(--line); }
+.service + .service { padding-left: 28px; }
+.service:last-child { border-right: 0; }
+.service .kind { font: 500 12px/1 var(--f-mono); color: var(--accent); letter-spacing: .04em; }
+.service h3 { font: 700 30px/1.05 var(--f-display); letter-spacing: -.03em; margin: 18px 0 14px; }
+.service p { margin: 0 0 20px; color: var(--ink-2); font-size: 16px; max-width: 42ch; }
+.service ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font: 400 13.5px/1.4 var(--f-mono); color: var(--ink-2); }
+.service li::before { content: "→ "; color: var(--accent); }
+@media (max-width: 900px) {
+  .services { grid-template-columns: 1fr; }
+  .service, .service + .service { padding: 28px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+  .service:last-child { border-bottom: 0; }
+}
+
+/* ---------- METODO (sequenza reale: la numerazione ha senso) ---------- */
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: step; }
+.step { counter-increment: step; padding-top: 22px; border-top: 2px solid var(--line-strong); position: relative; }
+.step::before {
+  content: counter(step, decimal-leading-zero);
+  font: 500 13px/1 var(--f-mono); color: var(--accent);
+}
+.step::after {
+  content: ""; position: absolute; top: -6px; left: 0; width: 10px; height: 10px;
+  background: var(--accent); border-radius: 50%;
+}
+.step h3 { font: 700 26px/1.05 var(--f-display); letter-spacing: -.025em; margin: 14px 0 10px; }
+.step p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+@media (max-width: 900px) { .steps { grid-template-columns: 1fr 1fr; row-gap: 40px; } }
+@media (max-width: 520px) { .steps { grid-template-columns: 1fr; } }
+
+/* ---------- CHI SONO ---------- */
+.about { display: grid; grid-template-columns: 1.2fr 1fr; gap: clamp(32px, 6vw, 96px); align-items: start; }
+.about .intro { font: 500 clamp(24px, 2.6vw, 34px)/1.25 var(--f-display); letter-spacing: -.02em; margin: 0 0 24px; text-wrap: pretty; }
+.about .intro em { font-style: normal; color: var(--accent); }
+.about p { color: var(--ink-2); max-width: 60ch; margin: 0 0 16px; }
+.facts { margin: 0; border-top: 1px solid var(--line-strong); }
+.facts div { display: grid; grid-template-columns: 130px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.facts dt { font: 500 11.5px/1.6 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 0; font-weight: 500; }
+@media (max-width: 900px) { .about { grid-template-columns: 1fr; } }
+
+/* ---------- CONTATTI ---------- */
+.contact { text-align: left; }
+.contact h2 { font-size: clamp(48px, 9vw, 140px); line-height: .88; letter-spacing: -.045em; }
+.contact h2 em { font-style: normal; color: var(--accent); font-weight: 500; }
+.contact .lede { margin: 32px 0 36px; }
+.contact .ctas .btn { padding: 18px 28px; font-size: 16px; }
+.contact-line { margin-top: 28px; font: 400 13px/1.6 var(--f-mono); color: var(--muted); }
+.contact-line a { color: var(--ink); text-decoration-color: var(--accent); text-underline-offset: 3px; }
+
+/* =====================================================================
+   FOOTER
+   ===================================================================== */
+footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(safe-area-inset-bottom, 0px)); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font: 400 12.5px/1.4 var(--f-mono); color: var(--muted); }
+footer a { text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+/* =====================================================================
+   ANIMAZIONI
+   ===================================================================== */
+@keyframes rise  { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes blink { to { visibility: hidden; } }
+@keyframes pulse { 50% { box-shadow: 0 0 0 9px transparent; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =====================================================================
+     CONFIGURAZIONE CONTATTI: modifica qui email e numero WhatsApp
+     ===================================================================== -->
+<script>
+  const CONTACT = {
+    email:    "",              // es. "nome@dominio.it"
+    whatsapp: "",              // solo cifre con prefisso, es. "393331234567"
+    location: "Italia"
+  };
+</script>
+
+<!-- =====================================================================
+     HEADER
+     ===================================================================== -->
+<header class="bar">
+  <div class="wrap">
+    <a class="logo" href="#top">Biddir Mouaad <b>/</b> Studio</a>
+    <nav class="links" aria-label="Sezioni">
+      <a href="#lavori">Lavori</a>
+      <a href="#servizi">Servizi</a>
+      <a href="#metodo">Metodo</a>
+      <a href="#chi-sono">Chi sono</a>
+      <a href="#contatti">Contatti</a>
+    </nav>
+    <div class="tools">
+      <button class="theme-btn" id="themeToggle" type="button" aria-label="Cambia tema">
+        <span class="ico" aria-hidden="true"></span><span id="themeLabel">tema</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- =====================================================================
+       HERO
+       ===================================================================== -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="status rv">Disponibile per nuovi progetti</div>
+      <h1 class="rv d1">Gestionali solidi.<br>Siti web <em>su misura.</em><span class="cursor" aria-hidden="true"></span></h1>
+      <div class="hero-row rv d2">
+        <p class="lede">Progetto e sviluppo software operativi per magazzini e piccole imprese, e siti web veloci che raccontano bene chi sei. Dall'idea al lancio, parli sempre con chi scrive il codice.</p>
+        <div class="ctas">
+          <a class="btn btn-solid js-wa" href="#contatti">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+            Scrivimi su WhatsApp
+          </a>
+          <a class="btn btn-ghost" href="#servizi">Cosa faccio</a>
+        </div>
+      </div>
+      <dl class="specs rv d3">
+        <div><dt>Focus</dt><dd>Gestionali &amp; siti web</dd></div>
+        <div><dt>Approccio</dt><dd>Tutto su misura</dd></div>
+        <div><dt>Contatto</dt><dd>Diretto, senza intermediari</dd></div>
+        <div><dt>Base</dt><dd id="specLocation">Italia</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       LAVORI
+       Per aggiungere un progetto compila l'array PROJECTS nello script in fondo.
+       Finché è vuoto viene mostrato lo stato "in cantiere".
+       ===================================================================== -->
+  <section class="sec" id="lavori">
+    <div class="wrap">
+      <p class="cmd">~/studio <b>$</b> ls ./lavori</p>
+      <div class="sec-head">
+        <h2>Lavori selezionati</h2>
+        <span class="count" id="worksCount">00 progetti</span>
+      </div>
+      <div class="filters" id="filters" hidden></div>
+      <div class="works" id="works"></div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       SERVIZI
+       ===================================================================== -->
+  <section class="sec" id="servizi">
+    <div class="wrap">
+      <p class="cmd">~/studio <b>$</b> cat servizi.txt</p>
+      <div class="sec-head"><h2>Cosa faccio</h2><span class="count">3 servizi</span></div>
+      <div class="services">
+        <article class="service">
+          <span class="kind">software</span>
+          <h3>Gestionali su misura</h3>
+          <p>Strumenti costruiti attorno al modo in cui lavori davvero, non il contrario.</p>
+          <ul><li>Magazzino e inventario</li><li>Ordini, clienti e fornitori</li><li>Report e dashboard operative</li></ul>
+        </article>
+        <article class="service">
+          <span class="kind">web</span>
+          <h3>Siti web su misura</h3>
+          <p>Siti vetrina veloci e curati, disegnati per la tua attività e facili da trovare.</p>
+          <ul><li>Design originale, niente template</li><li>Ottimizzati per smartphone</li><li>SEO di base e prestazioni</li></ul>
+        </article>
+        <article class="service">
+          <span class="kind">supporto</span>
+          <h3>Assistenza ed evoluzione</h3>
+          <p>Dopo il lancio il progetto cresce con te: correzioni, nuove funzioni, aggiornamenti.</p>
+          <ul><li>Manutenzione continuativa</li><li>Nuove funzionalità su richiesta</li><li>Formazione all'uso</li></ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       METODO
+       ===================================================================== -->
+  <section class="sec" id="metodo">
+    <div class="wrap">
+      <p class="cmd">~/studio <b>$</b> ./metodo --step-by-step</p>
+      <div class="sec-head"><h2>Come lavoriamo</h2><span class="count">4 fasi</span></div>
+      <div class="steps">
+        <div class="step"><h3>Ascolto</h3><p>Capisco come lavori oggi, cosa ti rallenta e dove vuoi arrivare.</p></div>
+        <div class="step"><h3>Progetto</h3><p>Definiamo insieme funzioni, schermate e priorità, prima di scrivere codice.</p></div>
+        <div class="step"><h3>Sviluppo</h3><p>Costruisco per passi, con versioni da provare subito e feedback continui.</p></div>
+        <div class="step"><h3>Lancio</h3><p>Messa online, formazione e supporto nelle prime settimane di utilizzo.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CHI SONO
+       ===================================================================== -->
+  <section class="sec" id="chi-sono">
+    <div class="wrap">
+      <p class="cmd">~/studio <b>$</b> whoami</p>
+      <div class="sec-head"><h2>Chi sono</h2></div>
+      <div class="about">
+        <div>
+          <p class="intro">Sono <em>Mouaad Biddir</em>, sviluppatore software e web designer.</p>
+          <p>Realizzo gestionali di magazzino, software operativi e siti web su misura per aziende e professionisti che vogliono strumenti semplici, affidabili e pensati per loro.</p>
+          <p>Questo studio è appena nato: i primi progetti arriveranno presto in questa pagina.</p>
+        </div>
+        <dl class="facts">
+          <div><dt>Ruolo</dt><dd>Sviluppatore &amp; web designer</dd></div>
+          <div><dt>Specialità</dt><dd>Gestionali di magazzino</dd></div>
+          <div><dt>Fa anche</dt><dd>Siti web e software operativi</dd></div>
+          <div><dt>Base</dt><dd id="factLocation">Italia</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       CONTATTI
+       ===================================================================== -->
+  <section class="sec contact" id="contatti">
+    <div class="wrap">
+      <p class="cmd">~/studio <b>$</b> contatta --ora</p>
+      <h2>Hai un progetto<br>in <em>mente?</em></h2>
+      <p class="lede">Raccontami cosa ti serve: un gestionale, un sito o solo un'idea da chiarire. Ti rispondo personalmente.</p>
+      <div class="ctas">
+        <a class="btn btn-solid js-wa" href="#contatti">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+          Scrivimi su WhatsApp
+        </a>
+        <a class="btn btn-ghost js-mail" href="#contatti" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          Invia una email
+        </a>
+      </div>
+      <p class="contact-line" id="contactLine"></p>
+    </div>
+  </section>
+</main>
+
+<!-- =====================================================================
+     FOOTER
+     ===================================================================== -->
+<footer>
+  <div class="wrap">
+    <span>© <span id="year">2026</span> Biddir Mouaad — Studio</span>
+    <span>Gestionali · Siti web · Software operativi</span>
+    <a href="#top">Torna su ↑</a>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   PROGETTI
+   Aggiungi qui i lavori man mano. Esempio:
+   {
+     titolo: "Nome progetto",
+     tipo: "Gestionale",            // "Gestionale" oppure "Sito web"
+     anno: 2026,
+     descrizione: "Breve descrizione del progetto.",
+     stack: ["PHP", "MySQL"],
+     immagine: "img/progetto.jpg",  // facoltativa
+     link: "https://..."            // facoltativo
+   }
+   ===================================================================== */
+const PROJECTS = [];
+
+/* =====================================================================
+   RENDER LAVORI
+   ===================================================================== */
+(function renderWorks() {
+  const grid = document.getElementById('works');
+  const count = document.getElementById('worksCount');
+  const filters = document.getElementById('filters');
+  const pad = n => String(n).padStart(2, '0');
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  count.textContent = pad(PROJECTS.length) + (PROJECTS.length === 1 ? ' progetto' : ' progetti');
+
+  // Stato vuoto: il primo slot annuncia il progetto in arrivo, gli altri restano liberi
+  if (!PROJECTS.length) {
+    grid.innerHTML = [
+      { t: 'Il primo progetto è in cantiere.', s: 'In arrivo', sub: 'Gestionali e siti web in preparazione.', first: true },
+      { t: 'Spazio riservato al prossimo lavoro.', s: 'Libero', sub: 'Potrebbe essere il tuo.' },
+      { t: 'Spazio riservato al prossimo lavoro.', s: 'Libero', sub: 'Potrebbe essere il tuo.' }
+    ].map((x, i) => `
+      <div class="slot${x.first ? ' is-first' : ''}">
+        <div class="tag"><span>Slot ${pad(i + 1)}</span><span>${x.s}</span></div>
+        <p>${x.t}</p>
+        <div class="sub">${x.sub}</div>
+      </div>`).join('');
+    return;
+  }
+
+  // Con progetti presenti: filtri per tipo + card
+  const types = ['Tutti', ...new Set(PROJECTS.map(p => p.tipo).filter(Boolean))];
+  let active = 'Tutti';
+  const draw = () => {
+    grid.innerHTML = PROJECTS.filter(p => active === 'Tutti' || p.tipo === active).map(p => {
+      const tag = p.link ? 'a' : 'article';
+      const href = p.link ? ` href="${esc(p.link)}" target="_blank" rel="noopener"` : '';
+      return `<${tag} class="work"${href}>
+        <div class="shot">${p.immagine ? `<img src="${esc(p.immagine)}" alt="${esc(p.titolo)}" loading="lazy">` : ''}</div>
+        <div class="body">
+          <div class="meta"><span>${esc(p.tipo)}</span><span>${esc(p.anno)}</span></div>
+          <h3>${esc(p.titolo)}</h3>
+          <p>${esc(p.descrizione)}</p>
+          <div class="stack">${(p.stack || []).map(s => `<span>${esc(s)}</span>`).join('')}</div>
+        </div>
+      </${tag}>`;
+    }).join('');
+  };
+  if (types.length > 2) {
+    filters.hidden = false;
+    filters.innerHTML = types.map(t => `<button type="button" aria-pressed="${t === active}">${esc(t)}</button>`).join('');
+    filters.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      active = b.textContent;
+      filters.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+      draw();
+    });
+  }
+  draw();
+})();
+
+/* =====================================================================
+   CONTATTI (WhatsApp + email dalla configurazione in alto)
+   ===================================================================== */
+(function contacts() {
+  const msg = encodeURIComponent('Ciao Mouaad, ti scrivo dal sito: avrei un progetto da proporti.');
+  document.querySelectorAll('.js-wa').forEach(a => {
+    if (CONTACT.whatsapp) { a.href = `https://wa.me/${CONTACT.whatsapp}?text=${msg}`; a.target = '_blank'; a.rel = 'noopener'; }
+  });
+  const mail = document.querySelector('.js-mail');
+  const line = document.getElementById('contactLine');
+  const bits = [];
+  if (CONTACT.email) {
+    mail.href = `mailto:${CONTACT.email}`; mail.hidden = false;
+    bits.push(`<a href="mailto:${CONTACT.email}">${CONTACT.email}</a>`);
+  }
+  if (CONTACT.whatsapp) bits.push('WhatsApp +' + CONTACT.whatsapp.replace(/^(\d{2})(\d{3})(\d+)/, '$1 $2 $3'));
+  line.innerHTML = bits.join(' · ');
+  document.getElementById('specLocation').textContent = CONTACT.location;
+  document.getElementById('factLocation').textContent = CONTACT.location;
+  document.getElementById('year').textContent = new Date().getFullYear();
+})();
+
+/* =====================================================================
+   TEMA CHIARO / SCURO
+   Primo accesso: segue il sistema. Dopo un clic: scelta salvata.
+   ===================================================================== */
+(function theme() {
+  const root = document.documentElement;
+  const btn = document.getElementById('themeToggle');
+  const label = document.getElementById('themeLabel');
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const current = () => root.dataset.theme || (mq.matches ? 'dark' : 'light');
+  const sync = () => {
+    const t = current();
+    label.textContent = t === 'dark' ? 'chiaro' : 'scuro';
+    btn.setAttribute('aria-label', t === 'dark' ? 'Passa al tema chiaro' : 'Passa al tema scuro');
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.content = t === 'dark' ? '#0C0B09' : '#ECEEEA');
+  };
+  btn.addEventListener('click', () => {
+    const next = current() === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try { localStorage.setItem('bm-theme', next); } catch (e) {}
+    sync();
+  });
+  mq.addEventListener?.('change', sync);
+  sync();
+})();
+</script>
+</body>
+</html>
