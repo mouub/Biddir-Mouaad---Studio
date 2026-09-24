@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Biddir Mouaad — Studio</title>
 <meta name="description" content="Biddir Mouaad, sviluppatore software e web designer: gestionali di magazzino, software operativi e siti web su misura.">
-<meta name="theme-color" content="#ECEEEA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#F1EEEA" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C0B09" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314171A'/%3E%3Ctext x='6' y='22' font-family='monospace' font-size='15' font-weight='700' fill='%23FFB23F'%3EBM%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314171A'/%3E%3Ctext x='6' y='22' font-family='monospace' font-size='15' font-weight='700' fill='%23C95A76'%3EBM%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,500;0,700;1,500&family=Geist:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -21,25 +21,25 @@
 /* =====================================================================
    DESIGN TOKENS
    Due mondi, un solo layout:
-   - Chiaro  = "Tavola tecnica"  (carta da disegno, griglia, verde bosco)
+   - Chiaro  = "Terminale su carta" (puntinato, scanline leggere, borgogna)
    - Scuro   = "Terminale"       (fosforo ambra, puntinato, scanline)
    Per cambiare i colori modifica solo questi blocchi.
    ===================================================================== */
 :root {
-  --bg:         #ECEEEA;
-  --surface:    #F6F7F4;
-  --ink:        #14171A;
-  --ink-2:      #3A3F41;
-  --muted:      #697170;
-  --line:       rgba(20, 23, 26, .13);
-  --line-strong:#14171A;
-  --accent:     #1F5C45;
-  --accent-wash:rgba(31, 92, 69, .09);
-  --on-accent:  #F6F7F4;
-  --glow:       transparent;
-  --tex: linear-gradient(var(--line) 1px, transparent 1px) 0 -1px / 100% 240px,
-         linear-gradient(90deg, var(--line) 1px, transparent 1px) -1px 0 / calc(100% / 12) 100%;
-  --scan-opacity: 0;
+  /* Chiaro = "Terminale su carta": stesso stile del tema scuro, accento borgogna */
+  --bg:         #F1EEEA;
+  --surface:    #F8F6F3;
+  --ink:        #1B1416;
+  --ink-2:      #4A3F42;
+  --muted:      #7E7275;
+  --line:       rgba(27, 20, 22, .12);
+  --line-strong:#1B1416;
+  --accent:     #9C2F4C;
+  --accent-wash:rgba(156, 47, 76, .09);
+  --on-accent:  #F8F6F3;
+  --glow: radial-gradient(circle at 82% 8%, rgba(156,47,76,.10), transparent 42%);
+  --tex: radial-gradient(rgba(27,20,22,.10) 1px, transparent 1px) 0 0 / 22px 22px;
+  --scan-opacity: .28;
 
   --f-display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
   --f-body:    "Geist", "Helvetica Neue", Arial, sans-serif;
@@ -629,7 +629,7 @@ const PROJECTS = [];
     const t = current();
     label.textContent = t === 'dark' ? 'chiaro' : 'scuro';
     btn.setAttribute('aria-label', t === 'dark' ? 'Passa al tema chiaro' : 'Passa al tema scuro');
-    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.content = t === 'dark' ? '#0C0B09' : '#ECEEEA');
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.content = t === 'dark' ? '#0C0B09' : '#F1EEEA');
   };
   btn.addEventListener('click', () => {
     const next = current() === 'dark' ? 'light' : 'dark';
