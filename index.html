@@ -12,9 +12,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,500;0,700;1,500&family=Geist:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 
-<!-- Applica il tema salvato prima del primo paint (evita il lampo di tema sbagliato) -->
+<!-- Tema: scuro di default; se il visitatore ha scelto il chiaro, viene ricordato -->
 <script>
-  try { var t = localStorage.getItem('bm-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  (function () {
+    var t = 'dark';
+    try { var saved = localStorage.getItem('bm-theme'); if (saved === 'light' || saved === 'dark') t = saved; } catch (e) {}
+    document.documentElement.dataset.theme = t;
+  })();
 </script>
 
 <style>
@@ -617,7 +621,7 @@ const PROJECTS = [];
 
 /* =====================================================================
    TEMA CHIARO / SCURO
-   Primo accesso: segue il sistema. Dopo un clic: scelta salvata.
+   Primo accesso: scuro. Dopo un clic: scelta salvata.
    ===================================================================== */
 (function theme() {
   const root = document.documentElement;
