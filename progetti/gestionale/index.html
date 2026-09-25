@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestionale Magazzino</title>
+<meta name="description" content="Gestionale di magazzino dimostrativo: prodotti, vendite, resi, inventari, fornitori. Biddir Mouaad — Studio.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* =====================================================================
+   DESIGN TOKENS — stile formale: carta, inchiostro, blu notte
+   ===================================================================== */
+:root {
+  --bg: #F3F2EE;
+  --surface: #FFFFFF;
+  --ink: #1B1F24;
+  --ink-2: #454B53;
+  --muted: #737880;
+  --line: #DCD9D1;
+  --line-soft: #ECEAE4;
+  --head: #1F2A3A;          /* barra superiore */
+  --accent: #1F3A5F;        /* blu notte */
+  --accent-soft: #E7ECF3;
+  --ok: #2F5D46;  --ok-soft: #E6EFE9;
+  --warn: #8A5A12; --warn-soft: #F6EEDF;
+  --danger: #8E2A2A; --danger-soft: #F6E6E4;
+  --gold: #9A7A3C;
+  --f-title: "Source Serif 4", Georgia, serif;
+  --f-body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --r: 4px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 14.5px/1.5 var(--f-body); -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-family: var(--f-title); font-weight: 600; margin: 0; letter-spacing: -.005em; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono, td.num, .code { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* =====================================================================
+   CONTROLLI
+   ===================================================================== */
+label { display: block; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 6px; }
+label .req { color: var(--danger); }
+label .hint { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--muted); }
+input, select, textarea {
+  width: 100%; height: 38px; padding: 0 11px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r); transition: border-color .15s;
+}
+textarea { height: auto; min-height: 76px; padding: 9px 11px; resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+input[readonly] { background: var(--bg); color: var(--muted); font-family: var(--f-mono); }
+.help { font-size: 12.5px; color: var(--muted); margin-top: 5px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 38px; padding: 0 16px;
+  border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink);
+  font-size: 12.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.btn:hover { border-color: var(--ink-2); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { background: #172d4b; border-color: #172d4b; }
+.btn-ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+.btn-danger { color: var(--danger); border-color: #E3C6C3; }
+.btn-danger:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn-sm { height: 30px; padding: 0 11px; font-size: 11.5px; }
+.btn-link { border: 0; background: none; padding: 0; height: auto; color: var(--accent); font-family: var(--f-mono); font-size: 14px; font-weight: 500; letter-spacing: 0; text-transform: none; cursor: pointer; }
+.btn-link:hover { text-decoration: underline; }
+.btn-block { width: 100%; }
+
+/* =====================================================================
+   ACCESSO
+   ===================================================================== */
+.login { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+.login-card { width: min(420px, 100%); background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--accent); padding: 36px 34px 30px; }
+.seal { width: 48px; height: 48px; border: 1px solid var(--accent); display: grid; place-items: center; font-family: var(--f-title); font-size: 20px; color: var(--accent); margin-bottom: 22px; }
+.login h1 { font-size: 28px; }
+.login .sub { color: var(--muted); margin: 6px 0 24px; }
+.notice { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 12px 14px; font-size: 13.5px; margin-bottom: 22px; }
+.notice b { color: var(--accent); }
+.notice code { font-family: var(--f-mono); background: var(--surface); border: 1px solid var(--line); padding: 1px 6px; border-radius: 3px; }
+.stack { display: grid; gap: 16px; }
+.err { color: var(--danger); font-size: 13px; margin: 0; }
+.err:empty { display: none; }
+
+/* =====================================================================
+   STRUTTURA APPLICAZIONE: barra superiore + navigazione laterale
+   ===================================================================== */
+.topbar { height: 56px; background: var(--head); color: #E9ECF1; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; position: sticky; top: 0; z-index: 20; }
+.brand { display: flex; align-items: center; gap: 12px; font-family: var(--f-title); font-size: 18px; }
+.brand .seal { width: 32px; height: 32px; margin: 0; font-size: 14px; color: #fff; border-color: rgba(255,255,255,.4); }
+.who { display: flex; align-items: center; gap: 14px; font-size: 13px; }
+.who .role { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; border: 1px solid var(--gold); color: #D8C08D; padding: 2px 8px; }
+.topbar .btn { height: 32px; background: transparent; color: #E9ECF1; border-color: rgba(255,255,255,.28); }
+.topbar .btn:hover { border-color: #fff; }
+.menu-btn { display: none; }
+
+.shell { display: grid; grid-template-columns: 230px 1fr; min-height: calc(100vh - 56px); }
+.side { border-right: 1px solid var(--line); background: var(--surface); padding: 18px 0; }
+.side .group { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 14px 22px 6px; }
+.side a { display: flex; justify-content: space-between; align-items: center; padding: 9px 22px; color: var(--ink-2); text-decoration: none; border-left: 3px solid transparent; font-weight: 500; }
+.side a:hover { background: var(--bg); color: var(--ink); }
+.side a[aria-current="page"] { border-left-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.side .count { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.main { padding: 28px clamp(16px, 3vw, 40px) 60px; min-width: 0; }
+.page-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.page-head h2 { font-size: 26px; }
+.page-head p { margin: 4px 0 0; color: var(--muted); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); padding: 22px; margin-bottom: 20px; }
+.panel h3 { font-size: 18px; margin-bottom: 16px; }
+.panel.narrow { max-width: 640px; }
+.grid { display: grid; gap: 14px 16px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.grid-2 { display: grid; gap: 14px 16px; grid-template-columns: 1fr 1fr; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.actions .spacer { flex: 1; }
+
+/* Riepilogo valori */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); background: var(--surface); margin-bottom: 20px; }
+.kpi { padding: 16px 18px; border-right: 1px solid var(--line-soft); }
+.kpi:last-child { border-right: 0; }
+.kpi .k { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.kpi .v { font-family: var(--f-title); font-size: 26px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+/* Tabelle */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); font-weight: 600; background: #F8F7F4; padding: 11px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: #FAF9F6; }
+td.num, th.num { text-align: right; }
+td.act { text-align: right; }
+td.act .btn + .btn { margin-left: 6px; }
+.empty { padding: 26px 14px; color: var(--muted); text-align: center; white-space: normal; }
+.foot-note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+.tag { display: inline-block; font-size: 11.5px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 2px; color: var(--ink-2); }
+.tag.oro { border-color: #D9C49A; color: var(--gold); background: #FBF6EC; }
+.tag.arg { border-color: #CBD2DB; color: #4F5D70; background: #F3F5F8; }
+.margin-pos { color: var(--ok); } .margin-neg { color: var(--danger); }
+
+/* Impostazioni: schede di scelta */
+.choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.choice { text-align: left; background: var(--surface); border: 1px solid var(--line); padding: 18px; cursor: pointer; }
+.choice:hover, .choice[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.choice b { display: block; font-family: var(--f-title); font-size: 16px; margin-bottom: 4px; }
+.choice span { color: var(--muted); font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); padding: 5px 6px 5px 11px; background: var(--bg); }
+.chip button { border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 16px; line-height: 1; padding: 0 4px; }
+.chip button:hover { color: var(--danger); }
+
+/* Finestra di dialogo */
+dialog { border: 1px solid var(--line); border-top: 3px solid var(--accent); padding: 0; width: min(620px, calc(100vw - 32px)); background: var(--surface); color: var(--ink); }
+dialog::backdrop { background: rgba(20, 24, 30, .45); }
+.dlg-head { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid var(--line); }
+.dlg-head h3 { font-size: 20px; }
+.dlg-body { padding: 20px 22px; }
+.dlg-foot { padding: 14px 22px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; background: #F8F7F4; }
+.x { border: 0; background: none; font-size: 24px; line-height: 1; cursor: pointer; color: var(--muted); }
+dl.sheet { display: grid; grid-template-columns: 150px 1fr; margin: 0; }
+dl.sheet dt, dl.sheet dd { padding: 8px 0; border-bottom: 1px solid var(--line-soft); margin: 0; }
+dl.sheet dt { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--head); color: #fff; padding: 11px 18px; font-size: 13.5px; z-index: 50; }
+
+/* Mobile */
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .side { position: fixed; top: 56px; left: 0; bottom: 0; width: 250px; z-index: 15; transform: translateX(-100%); transition: transform .25s; }
+  .side.open { transform: none; box-shadow: 8px 0 30px rgba(0,0,0,.12); }
+  .menu-btn { display: inline-flex; }
+  .who .name { display: none; }
+  .kpis { grid-template-columns: 1fr 1fr; }
+  .kpi:nth-child(2) { border-right: 0; }
+  .kpi:nth-child(-n+2) { border-bottom: 1px solid var(--line-soft); }
+  .grid-2 { grid-template-columns: 1fr; }
+  .brand .label { display: none; }
+}
+
+/* Stampa: solo intestazione e tabella della sezione corrente */
+.print-head { display: none; }
+@media print {
+  body { background: #fff; }
+  .topbar, .side, .panel, .kpis, .page-head, .toast, td.act, th.act { display: none !important; }
+  .shell { display: block; } .main { padding: 0; }
+  .print-head { display: block; margin-bottom: 12px; font-family: var(--f-title); }
+  .table-wrap { border: 0; overflow: visible; }
+  th, td { padding: 5px 8px; font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- =====================================================================
+     ACCESSO
+     ===================================================================== -->
+<section class="login" id="loginView" hidden>
+  <form class="login-card" id="loginForm" novalidate>
+    <div class="seal">GM</div>
+    <h1>Gestionale Magazzino</h1>
+    <p class="sub">Accesso riservato al personale</p>
+    <div class="notice">
+      <b>Demo dimostrativa.</b> Dati di esempio salvati solo in questo browser: puoi provare tutto liberamente.<br>
+      Utente <code>admin</code> · Password <code>admin</code>
+    </div>
+    <div class="stack">
+      <div><label for="lgUser">Nome utente <span class="req">*</span></label><input id="lgUser" autocomplete="username" value="admin" required></div>
+      <div><label for="lgPass">Password <span class="req">*</span></label><input id="lgPass" type="password" autocomplete="current-password" value="admin" required></div>
+      <p class="err" id="lgErr" role="alert"></p>
+      <button class="btn btn-primary btn-block" type="submit">Accedi</button>
+    </div>
+  </form>
+</section>
+
+<!-- =====================================================================
+     APPLICAZIONE
+     ===================================================================== -->
+<div id="appView" hidden>
+  <header class="topbar">
+    <div class="brand">
+      <button class="btn btn-sm menu-btn" id="menuBtn" type="button" aria-label="Apri menu">Menu</button>
+      <span class="seal">GM</span><span class="label">Gestionale Magazzino</span>
+    </div>
+    <div class="who">
+      <span class="name">Utente: <b id="whoName"></b></span>
+      <span class="role" id="whoRole"></span>
+      <button class="btn btn-sm" id="logoutBtn" type="button">Esci</button>
+    </div>
+  </header>
+  <div class="shell">
+    <nav class="side" id="side" aria-label="Sezioni">
+      <div class="group">Operazioni</div>
+      <a href="#magazzino" data-view="magazzino">Magazzino <span class="count" data-count="magazzino"></span></a>
+      <a href="#aggiungi" data-view="aggiungi">Aggiungi prodotto</a>
+      <a href="#vendite" data-view="vendite">Vendite <span class="count" data-count="venduto"></span></a>
+      <a href="#resi" data-view="resi">Resi <span class="count" data-count="reso"></span></a>
+      <div class="group">Archivio</div>
+      <a href="#inventario" data-view="inventario">Inventario</a>
+      <a href="#fornitori" data-view="fornitori">Fornitori</a>
+      <div class="group">Sistema</div>
+      <a href="#impostazioni" data-view="impostazioni">Impostazioni</a>
+    </nav>
+    <main class="main" id="main"></main>
+  </div>
+</div>
+
+<dialog id="dlg"><div id="dlgContent"></div></dialog>
+
+<script>
+/* =====================================================================
+   DATI — salvati in localStorage (demo: ogni browser ha la sua copia)
+   ===================================================================== */
+const KEY = 'gm-db-v1';
+const today = () => new Date().toISOString().slice(0, 10);
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+function seed() {
+  const d = today();
+  const f1 = 'Metalli Preziosi Conti S.r.l.', f2 = 'Argenteria Ferri & Figli';
+  const p = (progr, codice, categoria, fornitore, acquisto, vendita, extra = {}) =>
+    ({ id: uid(), progr, codice, categoria, fornitore, acquisto, vendita, descrizione: '', data: d, stato: 'magazzino', ...extra });
+  return {
+    utente: { username: 'admin', password: 'admin', nome: 'Amministratore', ruolo: 'Proprietario' },
+    numerazione: { prefisso: 'A', contatore: 10 },
+    categorie: [
+      { nome: 'Anelli', materiale: 'Oro' }, { nome: 'Bracciali', materiale: 'Oro' },
+      { nome: 'Collane', materiale: 'Oro' }, { nome: 'Orecchini', materiale: 'Oro' },
+      { nome: 'Orologi da polso', materiale: '' }, { nome: 'Portachiavi', materiale: 'Argento e metalli' },
+      { nome: 'Spille', materiale: 'Argento e metalli' }, { nome: 'Argenteria', materiale: 'Argento e metalli' }
+    ],
+    fornitori: [
+      { id: uid(), nome: f1, piva: '01234567890', citta: 'Arezzo', tel: '0575 000000', email: 'ordini@conti.example' },
+      { id: uid(), nome: f2, piva: '09876543210', citta: 'Vicenza', tel: '0444 000000', email: 'info@ferri.example' }
+    ],
+    prodotti: [
+      p('A1', 'AN-001', 'Anelli', f1, 140, 290, { stato: 'venduto', dataVendita: d, vendutoDa: 'Amministratore' }),
+      p('A2', 'AN-002', 'Anelli', f1, 380, 790, { stato: 'venduto', dataVendita: d, vendutoDa: 'Amministratore' }),
+      p('A3', 'CO-010', 'Collane', f1, 210, 460),
+      p('A4', 'OR-004', 'Orecchini', f1, 95, 220),
+      p('A5', 'AR-120', 'Argenteria', f2, 60, 135),
+      p('A6', 'AN-007', 'Anelli', f1, 250, 540),
+      p('A7', 'SP-002', 'Spille', f2, 30, 75),
+      p('A8', 'BR-015', 'Bracciali', f1, 520, 1150),
+      p('A9', 'OL-003', 'Orologi da polso', f2, 150, 320),
+      p('A10', 'PC-021', 'Portachiavi', f2, 18, 40)
+    ],
+    inventari: []
+  };
+}
+let db;
+function load() { try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} if (!db || !db.prodotti) { db = seed(); save(); } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} }
+
+/* =====================================================================
+   UTILITÀ
+   ===================================================================== */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const eur = n => (n === '' || n == null || isNaN(n)) ? '—' : '€ ' + Number(n).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const dIt = s => s ? s.split('-').reverse().join('/') : '—';
+const materiale = cat => (db.categorie.find(c => c.nome === cat) || {}).materiale || '';
+const matTag = m => !m ? '—' : `<span class="tag ${m === 'Oro' ? 'oro' : 'arg'}">${esc(m)}</span>`;
+function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2400); }
+function csv(name, head, rows) {
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const txt = '﻿' + [head, ...rows].map(r => r.map(q).join(';')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt], { type: 'text/csv;charset=utf-8' }));
+  a.download = `${name}-${today()}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function checkPwd(v) { return v === db.utente.password; }
+
+/* =====================================================================
+   DIALOGO GENERICO
+   ===================================================================== */
+const dlg = $('#dlg');
+function openDlg(title, body, foot) {
+  $('#dlgContent').innerHTML = `<div class="dlg-head"><h3>${title}</h3><button class="x" type="button" data-close aria-label="Chiudi">×</button></div>
+    <div class="dlg-body">${body}</div><div class="dlg-foot">${foot}</div>`;
+  dlg.showModal();
+}
+dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-close]')) dlg.close(); });
+function confirmDlg(title, text, label, onOk) {
+  openDlg(esc(title), `<p style="margin:0">${text}</p>`, `<button class="btn" data-close>Annulla</button><button class="btn btn-danger" id="okBtn">${esc(label)}</button>`);
+  $('#okBtn').onclick = () => { dlg.close(); onOk(); };
+}
+
+/* =====================================================================
+   FILTRI (Magazzino, Vendite, Resi)
+   ===================================================================== */
+const filters = { magazzino: {}, vendite: {}, resi: {} };
+function filterForm(view, dateLabel) {
+  const f = filters[view];
+  const catOpts = db.categorie.map(c => `<option ${f.cat === c.nome ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
+  return `<form class="panel" id="filterForm">
+    <h3>Ricerca</h3>
+    <div class="grid">
+      <div><label for="fPr">Codice progressivo</label><input id="fPr" placeholder="es. A1" value="${esc(f.pr)}"></div>
+      <div><label for="fCat">Categoria</label><select id="fCat"><option value="">Tutte</option>${catOpts}</select></div>
+      <div><label for="fFo">Fornitore</label><input id="fFo" list="dlFornitori" placeholder="nome fornitore" value="${esc(f.fo)}"></div>
+      <div><label for="fEx">${dateLabel} esatta</label><input id="fEx" type="date" value="${esc(f.ex)}"></div>
+      <div><label for="fDa">Dal</label><input id="fDa" type="date" value="${esc(f.da)}"></div>
+      <div><label for="fAl">Al</label><input id="fAl" type="date" value="${esc(f.al)}"></div>
+    </div>
+    <datalist id="dlFornitori">${db.fornitori.map(x => `<option value="${esc(x.nome)}">`).join('')}</datalist>
+    <div class="actions">
+      <button class="btn btn-primary" type="submit">Cerca</button>
+      <button class="btn" type="button" id="fReset">Azzera</button>
+      <span class="spacer"></span>
+      <button class="btn" type="button" id="fCsv">Esporta CSV</button>
+      <button class="btn" type="button" id="fPrint">Stampa</button>
+    </div>
+  </form>`;
+}
+function bindFilters(view, onCsv) {
+  $('#filterForm').onsubmit = e => {
+    e.preventDefault();
+    filters[view] = { pr: $('#fPr').value.trim(), cat: $('#fCat').value, fo: $('#fFo').value.trim(), ex: $('#fEx').value, da: $('#fDa').value, al: $('#fAl').value };
+    render();
+  };
+  $('#fReset').onclick = () => { filters[view] = {}; render(); };
+  $('#fCsv').onclick = onCsv;
+  $('#fPrint').onclick = () => window.print();
+}
+function applyFilters(list, view, dateField) {
+  const f = filters[view];
+  return list.filter(p =>
+    (!f.pr || p.progr.toLowerCase() === f.pr.toLowerCase()) &&
+    (!f.cat || p.categoria === f.cat) &&
+    (!f.fo || (p.fornitore || '').toLowerCase().includes(f.fo.toLowerCase())) &&
+    (!f.ex || p[dateField] === f.ex) &&
+    (!f.da || p[dateField] >= f.da) &&
+    (!f.al || p[dateField] <= f.al));
+}
+const byProgr = (a, b) => (parseInt(b.progr.replace(/\D/g, '')) || 0) - (parseInt(a.progr.replace(/\D/g, '')) || 0);
+
+/* =====================================================================
+   VISTE
+   ===================================================================== */
+const views = {
+
+  /* ---------- MAGAZZINO ---------- */
+  magazzino() {
+    const all = db.prodotti.filter(p => p.stato === 'magazzino');
+    const list = applyFilters(all, 'magazzino', 'data').sort(byProgr);
+    const acq = list.reduce((s, p) => s + (+p.acquisto || 0), 0), ven = list.reduce((s, p) => s + (+p.vendita || 0), 0);
+    main.innerHTML = `
+      <div class="page-head"><div><h2>Magazzino</h2><p>Prodotti attualmente disponibili.</p></div></div>
+      ${filterForm('magazzino', 'Data carico')}
+      <div class="kpis">
+        <div class="kpi"><div class="k">Prodotti</div><div class="v">${list.length}</div></div>
+        <div class="kpi"><div class="k">Valore d'acquisto</div><div class="v">${eur(acq)}</div></div>
+        <div class="kpi"><div class="k">Valore di vendita</div><div class="v">${eur(ven)}</div></div>
+        <div class="kpi"><div class="k">Margine potenziale</div><div class="v">${eur(ven - acq)}</div></div>
+      </div>
+      <div class="print-head"><h2>Magazzino — ${dIt(today())}</h2></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Cod. progr.</th><th>Codice</th><th>Categoria</th><th>Materiale</th><th>Fornitore</th><th class="num">Acquisto</th><th class="num">Vendita</th><th>Data carico</th><th class="act"></th></tr></thead>
+        <tbody>${list.map(p => `<tr>
+          <td><button class="btn-link" data-open="${p.id}">${esc(p.progr)}</button></td>
+          <td class="code">${esc(p.codice) || '—'}</td><td>${esc(p.categoria)}</td><td>${matTag(materiale(p.categoria))}</td>
+          <td>${esc(p.fornitore) || '—'}</td><td class="num">${eur(p.acquisto)}</td><td class="num">${eur(p.vendita)}</td><td class="num">${dIt(p.data)}</td>
+          <td class="act"><button class="btn btn-sm" data-open="${p.id}">Apri</button></td></tr>`).join('') ||
+          `<tr><td colspan="9" class="empty">Nessun prodotto trovato.</td></tr>`}</tbody>
+      </table></div>`;
+    bindFilters('magazzino', () => csv('magazzino', ['Cod. progr.', 'Codice', 'Categoria', 'Materiale', 'Fornitore', 'Prezzo acquisto', 'Prezzo vendita', 'Data carico', 'Descrizione'],
+      list.map(p => [p.progr, p.codice, p.categoria, materiale(p.categoria), p.fornitore, p.acquisto, p.vendita, dIt(p.data), p.descrizione])));
+  },
+
+  /* ---------- AGGIUNGI PRODOTTO ---------- */
+  aggiungi() {
+    const n = db.numerazione;
+    main.innerHTML = `
+      <div class="page-head"><div><h2>Aggiungi prodotto</h2><p>Carico di nuova merce in magazzino.</p></div></div>
+      <form class="panel narrow" id="addForm" novalidate>
+        <div class="stack">
+          <div><label for="aPr">Codice progressivo <span class="hint">(automatico)</span></label><input id="aPr" readonly value="${esc(n.prefisso + (n.contatore + 1))}"></div>
+          <div class="grid-2">
+            <div><label for="aCo">Codice <span class="req">*</span></label><input id="aCo" placeholder="codice alfanumerico, es. AN-014" required></div>
+            <div><label for="aFo">Fornitore</label><input id="aFo" list="dlF2" placeholder="Cerca o scegli il fornitore…"><datalist id="dlF2">${db.fornitori.map(x => `<option value="${esc(x.nome)}">`).join('')}</datalist></div>
+          </div>
+          <div><label for="aCat">Categoria <span class="req">*</span></label><select id="aCat" required><option value="">— Scegli —</option>${db.categorie.map(c => `<option>${esc(c.nome)}</option>`).join('')}</select></div>
+          <div class="grid-2">
+            <div><label for="aAc">Prezzo di acquisto (€) <span class="req">*</span></label><input id="aAc" type="number" min="0" step="0.01" placeholder="es. 350" required></div>
+            <div><label for="aVe">Prezzo di vendita (€)</label><input id="aVe" type="number" min="0" step="0.01" placeholder="es. 690"><p class="help" id="aMar"></p></div>
+          </div>
+          <div class="grid-2">
+            <div><label for="aQt">Quantità <span class="req">*</span></label><input id="aQt" type="number" min="1" max="200" value="1" required><p class="help">Con più di 1 vengono create più righe con lo stesso codice progressivo.</p></div>
+            <div><label for="aDt">Data <span class="req">*</span></label><input id="aDt" type="date" value="${today()}" required></div>
+          </div>
+          <div><label for="aDe">Descrizione</label><textarea id="aDe" placeholder="descrizione libera del prodotto"></textarea></div>
+          <p class="err" id="aErr" role="alert"></p>
+          <button class="btn btn-ok btn-block" type="submit">Salva prodotto</button>
+        </div>
+      </form>`;
+    const mar = () => { const a = +$('#aAc').value, v = +$('#aVe').value; $('#aMar').innerHTML = a && v ? `Margine: <span class="${v >= a ? 'margin-pos' : 'margin-neg'}">${eur(v - a)} (${Math.round((v - a) / a * 100)}%)</span>` : ''; };
+    $('#aAc').oninput = $('#aVe').oninput = mar;
+    $('#addForm').onsubmit = e => {
+      e.preventDefault();
+      const codice = $('#aCo').value.trim(), cat = $('#aCat').value, acq = $('#aAc').value, qt = Math.min(200, Math.max(1, parseInt($('#aQt').value) || 1)), data = $('#aDt').value;
+      if (!codice || !cat || acq === '' || !data) { $('#aErr').textContent = 'Compila i campi obbligatori: codice, categoria, prezzo di acquisto e data.'; return; }
+      db.numerazione.contatore++;
+      const progr = db.numerazione.prefisso + db.numerazione.contatore;
+      for (let i = 0; i < qt; i++) db.prodotti.push({ id: uid(), progr, codice, categoria: cat, fornitore: $('#aFo').value.trim(), acquisto: +acq, vendita: $('#aVe').value === '' ? '' : +$('#aVe').value, descrizione: $('#aDe').value.trim(), data, stato: 'magazzino' });
+      save(); toast(`Salvato ${progr}${qt > 1 ? ` (${qt} pezzi)` : ''}.`); render();
+    };
+  },
+
+  /* ---------- VENDITE ---------- */
+  vendite() { movimenti('vendite', 'venduto', 'dataVendita', 'vendutoDa', 'Vendite', 'Data vendita', 'Venduto da', 'Annulla vendita'); },
+
+  /* ---------- RESI ---------- */
+  resi() { movimenti('resi', 'reso', 'dataReso', 'resoDa', 'Resi', 'Data reso', 'Reso da', 'Annulla reso'); },
+
+  /* ---------- INVENTARIO ---------- */
+  inventario() {
+    main.innerHTML = `
+      <div class="page-head"><div><h2>Inventario</h2><p>Istantanee del magazzino, conservate in archivio.</p></div></div>
+      <form class="panel narrow" id="invForm">
+        <h3>Nuovo inventario</h3>
+        <label for="iNome">Nome dell'inventario</label><input id="iNome" placeholder="es. Inventario ${new Date().getFullYear()}">
+        <p class="help">Alla creazione viene fotografato il magazzino attuale. L'inventario resta salvato in archivio.</p>
+        <div class="actions"><button class="btn btn-ok" type="submit">Crea inventario</button></div>
+      </form>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Nome</th><th>Data</th><th class="num">Pezzi</th><th class="num">Valore acquisto</th><th class="num">Valore vendita</th><th class="act"></th></tr></thead>
+        <tbody>${db.inventari.slice().reverse().map(v => `<tr><td>${esc(v.nome)}</td><td class="num">${dIt(v.data)}</td><td class="num">${v.righe.length}</td>
+          <td class="num">${eur(v.righe.reduce((s, r) => s + (+r.acquisto || 0), 0))}</td><td class="num">${eur(v.righe.reduce((s, r) => s + (+r.vendita || 0), 0))}</td>
+          <td class="act"><button class="btn btn-sm" data-inv="${v.id}">Apri</button><button class="btn btn-sm" data-invcsv="${v.id}">CSV</button></td></tr>`).join('') ||
+          `<tr><td colspan="6" class="empty">Nessun inventario ancora. Creane uno qui sopra.</td></tr>`}</tbody>
+      </table></div>`;
+    $('#invForm').onsubmit = e => {
+      e.preventDefault();
+      const nome = $('#iNome').value.trim() || `Inventario ${dIt(today())}`;
+      db.inventari.push({ id: uid(), nome, data: today(), righe: db.prodotti.filter(p => p.stato === 'magazzino').map(p => ({ ...p })) });
+      save(); toast('Inventario creato.'); render();
+    };
+    const invCsv = v => csv(v.nome.replace(/\s+/g, '-').toLowerCase(), ['Cod. progr.', 'Codice', 'Categoria', 'Fornitore', 'Prezzo acquisto', 'Prezzo vendita', 'Data carico'], v.righe.map(p => [p.progr, p.codice, p.categoria, p.fornitore, p.acquisto, p.vendita, dIt(p.data)]));
+    main.onclick = e => {
+      const a = e.target.closest('[data-inv]'), c = e.target.closest('[data-invcsv]');
+      if (c) invCsv(db.inventari.find(v => v.id === c.dataset.invcsv));
+      if (a) {
+        const v = db.inventari.find(x => x.id === a.dataset.inv);
+        openDlg(esc(v.nome), `<p class="help" style="margin:0 0 12px">Creato il ${dIt(v.data)} · ${v.righe.length} pezzi</p><div class="table-wrap" style="max-height:50vh"><table>
+          <thead><tr><th>Cod.</th><th>Categoria</th><th>Fornitore</th><th class="num">Vendita</th></tr></thead>
+          <tbody>${v.righe.map(p => `<tr><td class="code">${esc(p.progr)}</td><td>${esc(p.categoria)}</td><td>${esc(p.fornitore) || '—'}</td><td class="num">${eur(p.vendita)}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Magazzino vuoto al momento dell\'inventario.</td></tr>'}</tbody></table></div>`,
+          `<button class="btn" id="dCsv">Esporta CSV</button><button class="btn btn-primary" data-close>Chiudi</button>`);
+        $('#dCsv').onclick = () => invCsv(v);
+      }
+    };
+  },
+
+  /* ---------- FORNITORI ---------- */
+  fornitori() {
+    const f = filters.fornitori || {};
+    const list = db.fornitori.filter(x => (!f.n || x.nome.toLowerCase().includes(f.n.toLowerCase())) && (!f.p || (x.piva || '').includes(f.p)))
+      .sort((a, b) => a.nome.localeCompare(b.nome));
+    main.innerHTML = `
+      <div class="page-head"><div><h2>Fornitori</h2><p>Anagrafica dei fornitori.</p></div><button class="btn btn-primary" id="newF">Aggiungi fornitore</button></div>
+      <div class="panel"><div class="grid">
+        <div><label for="sN">Cerca per ragione sociale</label><input id="sN" placeholder="nome fornitore" value="${esc(f.n)}"></div>
+        <div><label for="sP">Cerca per partita IVA</label><input id="sP" placeholder="es. 01234567890" value="${esc(f.p)}"></div>
+        <div style="align-self:end"><button class="btn" id="sR">Azzera ricerca</button></div>
+      </div></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Ragione sociale</th><th>Città</th><th>P. IVA</th><th>Telefono</th><th>Email</th><th class="num">Prodotti</th><th class="act"></th></tr></thead>
+        <tbody>${list.map(x => `<tr><td>${esc(x.nome)}</td><td>${esc(x.citta) || '—'}</td><td class="code">${esc(x.piva) || '—'}</td><td>${esc(x.tel) || '—'}</td><td>${esc(x.email) || '—'}</td>
+          <td class="num">${db.prodotti.filter(p => p.fornitore === x.nome && p.stato === 'magazzino').length}</td>
+          <td class="act"><button class="btn btn-sm" data-edit="${x.id}">Modifica</button><button class="btn btn-sm btn-danger" data-del="${x.id}">Elimina</button></td></tr>`).join('') ||
+          `<tr><td colspan="7" class="empty">Nessun fornitore trovato.</td></tr>`}</tbody>
+      </table></div>`;
+    const live = () => { filters.fornitori = { n: $('#sN').value, p: $('#sP').value }; const pos = document.activeElement.id; render(); const el = $('#' + pos); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } };
+    $('#sN').oninput = $('#sP').oninput = live;
+    $('#sR').onclick = () => { filters.fornitori = {}; render(); };
+    $('#newF').onclick = () => fornitoreDlg();
+    main.onclick = e => {
+      const ed = e.target.closest('[data-edit]'), de = e.target.closest('[data-del]');
+      if (ed) fornitoreDlg(db.fornitori.find(x => x.id === ed.dataset.edit));
+      if (de) { const x = db.fornitori.find(y => y.id === de.dataset.del);
+        confirmDlg('Elimina fornitore', `Eliminare <b>${esc(x.nome)}</b> dall'anagrafica? I prodotti già caricati conservano il nome del fornitore.`, 'Elimina',
+          () => { db.fornitori = db.fornitori.filter(y => y.id !== x.id); save(); toast('Fornitore eliminato.'); render(); }); }
+    };
+  },
+
+  /* ---------- IMPOSTAZIONI ---------- */
+  impostazioni() {
+    const sec = filters.impostazioni || '';
+    main.innerHTML = `
+      <div class="page-head"><div><h2>Impostazioni</h2><p>Ogni modifica richiede la password del tuo account.</p></div></div>
+      <div class="choices" style="margin-bottom:20px">
+        ${[['cred', 'Credenziali di accesso', 'Cambia nome utente e password'], ['cat', 'Categorie', 'Aggiungi o rimuovi categorie'], ['num', 'Numerazione progressiva', 'Prefisso e azzeramento'], ['dati', 'Dati e backup', 'Esporta, importa o ripristina']]
+          .map(([k, t, s]) => `<button class="choice" data-sec="${k}" aria-pressed="${sec === k}"><b>${t}</b><span>${s}</span></button>`).join('')}
+      </div>
+      <div id="secBody"></div>`;
+    main.querySelectorAll('[data-sec]').forEach(b => b.onclick = () => { filters.impostazioni = b.dataset.sec; render(); });
+    const body = $('#secBody'), pwdField = `<div><label for="sPwd">Password attuale <span class="req">*</span></label><input id="sPwd" type="password" autocomplete="current-password"></div>`;
+    const guard = () => { if (!checkPwd($('#sPwd').value)) { $('#sErr').textContent = 'Password attuale non corretta.'; return false; } return true; };
+    if (sec === 'cred') {
+      body.innerHTML = `<form class="panel narrow" id="sForm"><h3>Credenziali di accesso</h3><div class="stack">
+        <div class="grid-2"><div><label for="cU">Nome utente</label><input id="cU" value="${esc(db.utente.username)}"></div><div><label for="cN">Nome visualizzato</label><input id="cN" value="${esc(db.utente.nome)}"></div></div>
+        <div><label for="cP">Nuova password <span class="hint">(lascia vuoto per non cambiarla)</span></label><input id="cP" type="password" autocomplete="new-password"></div>
+        ${pwdField}<p class="err" id="sErr"></p><button class="btn btn-primary" type="submit">Salva credenziali</button></div></form>`;
+      $('#sForm').onsubmit = e => { e.preventDefault(); if (!guard()) return; const u = $('#cU').value.trim(); if (!u) { $('#sErr').textContent = 'Il nome utente non può essere vuoto.'; return; }
+        db.utente.username = u; db.utente.nome = $('#cN').value.trim() || u; if ($('#cP').value) db.utente.password = $('#cP').value; save(); toast('Credenziali aggiornate.'); render(); };
+    }
+    if (sec === 'cat') {
+      body.innerHTML = `<form class="panel narrow" id="sForm"><h3>Categorie</h3>
+        <div class="chips" style="margin-bottom:18px">${db.categorie.map((c, i) => `<span class="chip">${esc(c.nome)} ${c.materiale ? `<small class="help" style="margin:0">· ${esc(c.materiale)}</small>` : ''}<button type="button" data-rm="${i}" aria-label="Rimuovi ${esc(c.nome)}">×</button></span>`).join('')}</div>
+        <div class="stack"><div class="grid-2"><div><label for="kN">Nuova categoria</label><input id="kN" placeholder="es. Fedi nuziali"></div>
+        <div><label for="kM">Materiale</label><select id="kM"><option value="">—</option><option>Oro</option><option>Argento e metalli</option></select></div></div>
+        ${pwdField}<p class="err" id="sErr"></p><button class="btn btn-primary" type="submit">Aggiungi categoria</button></div></form>`;
+      $('#sForm').onsubmit = e => { e.preventDefault(); if (!guard()) return; const n = $('#kN').value.trim();
+        if (!n || db.categorie.some(c => c.nome.toLowerCase() === n.toLowerCase())) { $('#sErr').textContent = 'Inserisci un nome nuovo.'; return; }
+        db.categorie.push({ nome: n, materiale: $('#kM').value }); save(); toast('Categoria aggiunta.'); render(); };
+      body.onclick = e => { const b = e.target.closest('[data-rm]'); if (!b) return; if (!guard()) return;
+        const c = db.categorie[b.dataset.rm]; if (db.prodotti.some(p => p.categoria === c.nome && p.stato === 'magazzino')) { $('#sErr').textContent = `"${c.nome}" è usata da prodotti in magazzino.`; return; }
+        db.categorie.splice(b.dataset.rm, 1); save(); toast('Categoria rimossa.'); render(); };
+    }
+    if (sec === 'num') {
+      const n = db.numerazione;
+      body.innerHTML = `<form class="panel narrow" id="sForm"><h3>Numerazione progressiva</h3>
+        <p class="help" style="margin:-6px 0 16px">Prossimo codice: <b class="mono">${esc(n.prefisso + (n.contatore + 1))}</b></p><div class="stack">
+        <div class="grid-2"><div><label for="nP">Prefisso</label><input id="nP" maxlength="4" value="${esc(n.prefisso)}"></div>
+        <div><label for="nZ">Azzeramento</label><select id="nZ"><option value="">Mantieni il contatore</option><option value="1">Riparti da 1</option></select></div></div>
+        ${pwdField}<p class="err" id="sErr"></p><button class="btn btn-primary" type="submit">Salva numerazione</button></div></form>`;
+      $('#sForm').onsubmit = e => { e.preventDefault(); if (!guard()) return; n.prefisso = $('#nP').value.trim().toUpperCase(); if ($('#nZ').value) n.contatore = 0; save(); toast('Numerazione aggiornata.'); render(); };
+    }
+    if (sec === 'dati') {
+      body.innerHTML = `<form class="panel narrow" id="sForm"><h3>Dati e backup</h3>
+        <p class="help" style="margin:-6px 0 16px">I dati sono salvati in questo browser. Esporta un backup per conservarli o spostarli su un altro dispositivo.</p><div class="stack">
+        ${pwdField}<p class="err" id="sErr"></p>
+        <div class="actions" style="margin:0"><button class="btn" type="button" id="bExp">Esporta backup</button>
+        <label class="btn" style="margin:0" for="bImp">Importa backup</label><input id="bImp" type="file" accept="application/json" hidden>
+        <span class="spacer"></span><button class="btn btn-danger" type="button" id="bRes">Ripristina dati demo</button></div></div></form>`;
+      $('#bExp').onclick = () => { if (!guard()) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 1)], { type: 'application/json' })); a.download = `backup-magazzino-${today()}.json`; a.click(); };
+      $('#bImp').onchange = async e => { if (!guard()) { e.target.value = ''; return; } try { const d = JSON.parse(await e.target.files[0].text()); if (!d.prodotti || !d.utente) throw 0; db = d; save(); toast('Backup importato.'); render(); } catch (x) { $('#sErr').textContent = 'File non valido: scegli un backup esportato da questo gestionale.'; } };
+      $('#bRes').onclick = () => { if (!guard()) return; confirmDlg('Ripristina dati demo', 'Tutti i dati attuali verranno sostituiti con quelli di esempio. Anche le credenziali tornano admin / admin.', 'Ripristina', () => { db = seed(); save(); toast('Dati demo ripristinati.'); render(); }); };
+    }
+  }
+};
+
+/* ---------- Vendite e Resi condividono la stessa vista ---------- */
+function movimenti(view, stato, dateField, byField, title, dateLabel, byLabel, undoLabel) {
+  const list = applyFilters(db.prodotti.filter(p => p.stato === stato), view, dateField).sort((a, b) => (b[dateField] || '').localeCompare(a[dateField] || ''));
+  const tot = list.reduce((s, p) => s + (+p.vendita || 0), 0);
+  main.innerHTML = `
+    <div class="page-head"><div><h2>${title}</h2><p>${stato === 'venduto' ? 'Storico delle vendite registrate.' : 'Prodotti restituiti al fornitore.'}</p></div></div>
+    ${filterForm(view, dateLabel.replace('Data ', 'Data '))}
+    <div class="print-head"><h2>${title} — ${dIt(today())}</h2></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>${dateLabel}</th><th>Cod. progr.</th><th>Categoria</th><th>Fornitore</th><th>Data carico</th><th class="num">Prezzo</th><th>${byLabel}</th><th class="act"></th></tr></thead>
+      <tbody>${list.map(p => `<tr><td class="num">${dIt(p[dateField])}</td><td><button class="btn-link" data-open="${p.id}">${esc(p.progr)}</button></td><td>${esc(p.categoria)}</td>
+        <td>${esc(p.fornitore) || '—'}</td><td class="num">${dIt(p.data)}</td><td class="num">${eur(p.vendita)}</td><td>${esc(p[byField])}</td>
+        <td class="act"><button class="btn btn-sm btn-danger" data-undo="${p.id}">${undoLabel}</button></td></tr>`).join('') ||
+        `<tr><td colspan="8" class="empty">Nessun${stato === 'venduto' ? 'a vendita trovata' : ' reso trovato'}.</td></tr>`}</tbody>
+    </table></div>
+    <p class="foot-note">${title} trovat${stato === 'venduto' ? 'e' : 'i'}: <b>${list.length}</b>${stato === 'venduto' && list.length ? ` · Incasso: <b>${eur(tot)}</b>` : ''}</p>`;
+  bindFilters(view, () => csv(view, [dateLabel, 'Cod. progr.', 'Codice', 'Categoria', 'Fornitore', 'Data carico', 'Prezzo', byLabel], list.map(p => [dIt(p[dateField]), p.progr, p.codice, p.categoria, p.fornitore, dIt(p.data), p.vendita, p[byField]])));
+  main.onclick = e => { const u = e.target.closest('[data-undo]'); if (!u) return; const p = db.prodotti.find(x => x.id === u.dataset.undo);
+    confirmDlg(undoLabel, `Il prodotto <b>${esc(p.progr)}</b> torna disponibile in magazzino.`, undoLabel, () => {
+      p.stato = 'magazzino'; delete p[dateField]; delete p[byField]; save(); toast('Prodotto riportato in magazzino.'); render(); }); };
+}
+
+/* ---------- Scheda prodotto ---------- */
+function prodottoDlg(p) {
+  const marg = (+p.vendita && +p.acquisto) ? `<span class="${p.vendita >= p.acquisto ? 'margin-pos' : 'margin-neg'}">${eur(p.vendita - p.acquisto)} (${Math.round((p.vendita - p.acquisto) / p.acquisto * 100)}%)</span>` : '—';
+  const stato = { magazzino: 'In magazzino', venduto: `Venduto il ${dIt(p.dataVendita)}`, reso: `Reso il ${dIt(p.dataReso)}` }[p.stato];
+  openDlg(`Prodotto <span class="mono">${esc(p.progr)}</span>`, `<dl class="sheet">
+      <dt>Stato</dt><dd>${stato}</dd><dt>Codice</dt><dd class="mono">${esc(p.codice) || '—'}</dd>
+      <dt>Categoria</dt><dd>${esc(p.categoria)} ${matTag(materiale(p.categoria))}</dd><dt>Fornitore</dt><dd>${esc(p.fornitore) || '—'}</dd>
+      <dt>Acquisto</dt><dd class="mono">${eur(p.acquisto)}</dd><dt>Vendita</dt><dd class="mono">${eur(p.vendita)}</dd><dt>Margine</dt><dd class="mono">${marg}</dd>
+      <dt>Data carico</dt><dd>${dIt(p.data)}</dd><dt>Descrizione</dt><dd style="white-space:pre-wrap">${esc(p.descrizione) || '—'}</dd></dl>
+    ${p.stato === 'magazzino' ? `<div class="grid-2" style="margin-top:18px"><div><label for="mD">Data operazione</label><input id="mD" type="date" value="${today()}"></div>
+      <div><label for="mV">Prezzo di vendita (€)</label><input id="mV" type="number" min="0" step="0.01" value="${esc(p.vendita)}"></div></div>` : ''}`,
+    p.stato === 'magazzino'
+      ? `<button class="btn btn-danger" id="pDel">Elimina</button><span style="flex:1"></span><button class="btn" id="pRes">Reso al fornitore</button><button class="btn btn-ok" id="pSell">Registra vendita</button>`
+      : `<button class="btn btn-primary" data-close>Chiudi</button>`);
+  if (p.stato !== 'magazzino') return;
+  const mv = (stato, dF, bF, msg) => { p.stato = stato; p[dF] = $('#mD').value || today(); p[bF] = db.utente.nome; if ($('#mV').value !== '') p.vendita = +$('#mV').value; save(); dlg.close(); toast(msg); render(); };
+  $('#pSell').onclick = () => mv('venduto', 'dataVendita', 'vendutoDa', `Vendita di ${p.progr} registrata.`);
+  $('#pRes').onclick = () => mv('reso', 'dataReso', 'resoDa', `Reso di ${p.progr} registrato.`);
+  $('#pDel').onclick = () => confirmDlg('Elimina prodotto', `Eliminare definitivamente <b>${esc(p.progr)}</b> (${esc(p.categoria)})? Usa questa azione solo per errori di carico.`, 'Elimina',
+    () => { db.prodotti = db.prodotti.filter(x => x.id !== p.id); save(); toast('Prodotto eliminato.'); render(); });
+}
+
+/* ---------- Scheda fornitore ---------- */
+function fornitoreDlg(x) {
+  const v = x || {};
+  openDlg(x ? 'Modifica fornitore' : 'Nuovo fornitore', `<form id="foForm" class="stack" novalidate>
+      <div><label for="oN">Nome / Ragione sociale <span class="req">*</span></label><input id="oN" value="${esc(v.nome)}"></div>
+      <div class="grid-2"><div><label for="oP">Partita IVA</label><input id="oP" inputmode="numeric" maxlength="11" value="${esc(v.piva)}"></div><div><label for="oC">Città</label><input id="oC" value="${esc(v.citta)}"></div></div>
+      <div class="grid-2"><div><label for="oT">Telefono</label><input id="oT" type="tel" value="${esc(v.tel)}"></div><div><label for="oE">Email</label><input id="oE" type="email" value="${esc(v.email)}"></div></div>
+      <p class="err" id="oErr"></p></form>`,
+    `<button class="btn" data-close>Annulla</button><button class="btn btn-primary" id="oSave">${x ? 'Salva modifiche' : 'Aggiungi fornitore'}</button>`);
+  $('#oSave').onclick = () => {
+    const nome = $('#oN').value.trim(), piva = $('#oP').value.trim();
+    if (!nome) { $('#oErr').textContent = 'La ragione sociale è obbligatoria.'; return; }
+    if (piva && !/^\d{11}$/.test(piva)) { $('#oErr').textContent = 'La partita IVA deve avere 11 cifre.'; return; }
+    if (db.fornitori.some(f => f.nome.toLowerCase() === nome.toLowerCase() && f !== x)) { $('#oErr').textContent = 'Esiste già un fornitore con questo nome.'; return; }
+    const data = { nome, piva, citta: $('#oC').value.trim(), tel: $('#oT').value.trim(), email: $('#oE').value.trim() };
+    if (x) { db.prodotti.forEach(p => { if (p.fornitore === x.nome) p.fornitore = nome; }); Object.assign(x, data); } else db.fornitori.push({ id: uid(), ...data });
+    save(); dlg.close(); toast(x ? 'Fornitore aggiornato.' : 'Fornitore aggiunto.'); render();
+  };
+}
+
+/* =====================================================================
+   NAVIGAZIONE E SESSIONE
+   ===================================================================== */
+const main = $('#main');
+function current() { const v = location.hash.slice(1); return views[v] ? v : 'magazzino'; }
+function render() {
+  const v = current();
+  main.onclick = null;
+  document.querySelectorAll('.side a').forEach(a => a.dataset.view === v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  document.querySelectorAll('[data-count]').forEach(s => s.textContent = db.prodotti.filter(p => p.stato === s.dataset.count).length);
+  $('#whoName').textContent = db.utente.nome; $('#whoRole').textContent = db.utente.ruolo;
+  views[v]();
+  const prev = main.onclick; // eventuale gestore della vista, esteso con "Apri prodotto"
+  main.onclick = e => { const o = e.target.closest('[data-open]'); if (o) return prodottoDlg(db.prodotti.find(p => p.id === o.dataset.open)); if (prev) prev(e); };
+  $('#side').classList.remove('open');
+}
+function logged() { try { return sessionStorage.getItem('gm-session') === '1'; } catch (e) { return window._gmSession; } }
+function setLogged(v) { try { v ? sessionStorage.setItem('gm-session', '1') : sessionStorage.removeItem('gm-session'); } catch (e) { window._gmSession = v; } }
+function boot() {
+  load();
+  $('#loginView').hidden = logged(); $('#appView').hidden = !logged();
+  if (logged()) render();
+}
+$('#loginForm').onsubmit = e => {
+  e.preventDefault(); load();
+  if ($('#lgUser').value.trim() === db.utente.username && $('#lgPass').value === db.utente.password) { setLogged(true); boot(); }
+  else $('#lgErr').textContent = 'Nome utente o password non corretti.';
+};
+$('#logoutBtn').onclick = () => { setLogged(false); boot(); };
+$('#menuBtn').onclick = () => $('#side').classList.toggle('open');
+window.addEventListener('hashchange', () => { if (logged()) render(); });
+boot();
+</script>
+</body>
+</html>
