@@ -268,6 +268,7 @@ img { max-width: 100%; }
 .work .meta { font: 500 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
 .work h3 { margin: 0; font: 700 26px/1.05 var(--f-display); letter-spacing: -.025em; }
 .work p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+.work .credit { font: 400 12px/1.5 var(--f-mono); color: var(--muted); }
 .work .stack { display: flex; flex-wrap: wrap; gap: 6px; }
 .work .stack span { font: 400 11.5px/1 var(--f-mono); padding: 6px 8px; border: 1px solid var(--line); border-radius: 3px; color: var(--ink-2); }
 
@@ -540,7 +541,18 @@ footer a:hover { color: var(--accent); }
      link: "https://..."            // facoltativo
    }
    ===================================================================== */
-const PROJECTS = [];
+const PROJECTS = [
+  {
+    titolo: "Carpe Diem — Food & Lounge",
+    tipo: "Sito web",
+    anno: 2026,
+    descrizione: "Sito vetrina per un locale di Rovereto: menu, eventi, gallery, prenotazione tavolo e banner cookie di consenso.",
+    credito: "Realizzato da Gianmarco Tonelli · co-produttore Mouaad Biddir",
+    stack: ["HTML", "CSS", "JavaScript", "Vercel"],
+    immagine: "img/carpediem.jpg",
+    link: "https://carpediem-gules.vercel.app"
+  }
+];
 
 /* =====================================================================
    RENDER LAVORI
@@ -582,6 +594,7 @@ const PROJECTS = [];
           <div class="meta"><span>${esc(p.tipo)}</span><span>${esc(p.anno)}</span></div>
           <h3>${esc(p.titolo)}</h3>
           <p>${esc(p.descrizione)}</p>
+          ${p.credito ? `<p class="credit">${esc(p.credito)}</p>` : ''}
           <div class="stack">${(p.stack || []).map(s => `<span>${esc(s)}</span>`).join('')}</div>
         </div>
       </${tag}>`;
